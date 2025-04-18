@@ -14,6 +14,7 @@ variables:
   buildConfiguration: 'Release'
   projectPath: 'SampleWebApiAspNetCore/SampleWebApiAspNetCore.csproj'
   dockerImageName: 'samplewebapiaspnetcore-webapi'
+  containerRegistryName: 'pruvi123' 
 
 stages:
 - stage: Build
@@ -51,7 +52,7 @@ stages:
       displayName: 'Build and Push Docker image'
       inputs:
         containerRegistry: 'az-docker-conn'
-        repository: '$(CONNRGNAME).azurecr.io/$(dockerImageName)'
+        repository: '$(containerRegistryName).azurecr.io/$(dockerImageName)'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
@@ -69,5 +70,5 @@ stages:
       displayName: 'Deploy to Azure Web App'
       inputs:
         azureSubscription: 'food-conn'
-        appName: $(APPNAME)
-        imageName: '$(CONNRGNAME).azurecr.io/$(dockerImageName):$(Build.BuildId)'
+        appName: 'pruvit123'
+        imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):$(Build.BuildId)'

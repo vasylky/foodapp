@@ -18,7 +18,7 @@ variables:
   buildConfiguration: 'Release'
   projectPath: 'SampleWebApiAspNetCore/SampleWebApiAspNetCore.csproj'
   dockerImageName: 'samplewebapi'
-  containerRegistryName: 'pruvi123'  
+  containerRegistryName: 'pruvi123'  # Замініть на назву вашого Azure Container Registry
 
 stages:
 - stage: Build
@@ -54,12 +54,12 @@ stages:
         projects: '**/*Tests.csproj'
         arguments: '--configuration $(buildConfiguration) --no-build'
         testRunTitle: 'Unit Tests'
-      continueOnError: true  
+      continueOnError: true  # Продовжити навіть якщо тести не пройшли (в PR)
 
     - task: Docker@2
       displayName: 'Build Docker image'
       inputs:
-        containerRegistry: 'food-conn'  # Створіть це підключення в Azure DevOps
+        containerRegistry: 'az-docker-conn'  # Створіть це підключення в Azure DevOps
         repository: '$(dockerImageName)'
         command: 'build'
         Dockerfile: '**/Dockerfile'
@@ -94,7 +94,7 @@ stages:
     - task: Docker@2
       displayName: 'Push Docker image to ACR'
       inputs:
-        containerRegistry: 'docker-registry-connection'
+        containerRegistry: 'az-docker-conn'
         repository: '$(dockerImageName)'
         command: 'push'
         tags: |
@@ -104,6 +104,6 @@ stages:
     - task: AzureWebAppContainer@1
       displayName: 'Deploy to Azure Web App'
       inputs:
-        azureSubscription: 'azure-subscription-connection'
+        azureSubscription: 'food-conn'
         appName: 'pruvit123'  # Замініть на назву вашого веб-додатку в Azure
         imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):$(Build.BuildId)'

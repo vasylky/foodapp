@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  webapi:
+    build:
+      context: .  
+      dockerfile: Dockerfile  
+    container_name: priceless_wilbur
+    ports:
+      - "8080:80"  
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development  
+    networks:
+      - webapi-network
+
+networks:
+  webapi-network:
+    driver: bridge

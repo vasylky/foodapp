@@ -14,7 +14,7 @@ variables:
   buildConfiguration: 'Release'
   projectPath: 'SampleWebApiAspNetCore/SampleWebApiAspNetCore.csproj'
   dockerImageName: 'samplewebapiaspnetcore-webapi'
-  containerRegistryName: 'pruvi123' # ACR name without .azurecr.io
+  containerRegistryName: $(CONNRGNAME) 
 
 stages:
 - stage: Build
@@ -70,5 +70,5 @@ stages:
       displayName: 'Deploy to Azure Web App'
       inputs:
         azureSubscription: 'food-conn'
-        appName: 'pruvit123'
+        appName: $(APPNAME)
         imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):$(Build.BuildId)'

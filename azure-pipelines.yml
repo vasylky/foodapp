@@ -17,7 +17,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   projectPath: 'SampleWebApiAspNetCore/SampleWebApiAspNetCore.csproj'
-  dockerImageName: 'samplewebapiaspnetcore-webapi:latest'
+  dockerImageName: 'samplewebapiaspnetcore-webapi'
   containerRegistryName: 'pruvi123'  # Замініть на назву вашого Azure Container Registry
 
 stages:

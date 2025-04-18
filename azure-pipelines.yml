@@ -1,6 +1,3 @@
-# Azure DevOps Pipeline для .NET Web API
-# Виконує збірку і розгортання для гілки main і збірку для PR
-
 trigger:
   branches:
     include:
@@ -9,7 +6,7 @@ trigger:
 pr:
   branches:
     include:
-      - '*'  # Збірка для всіх PR
+      - '*'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -18,7 +15,7 @@ variables:
   buildConfiguration: 'Release'
   projectPath: 'SampleWebApiAspNetCore/SampleWebApiAspNetCore.csproj'
   dockerImageName: 'samplewebapiaspnetcore-webapi'
-  containerRegistryName: 'pruvi123'  # Замініть на назву вашого Azure Container Registry
+  containerRegistryName: 'pruvi123'  # Ім'я ACR без .azurecr.io
 
 stages:
 - stage: Build
@@ -27,39 +24,35 @@ stages:
   - job: BuildAndTest
     steps:
     - task: UseDotNet@2
-      displayName: 'Install .NET SDK'
       inputs:
         packageType: 'sdk'
         version: '7.0.x'
-        installationPath: $(Agent.ToolsDirectory)/dotnet
 
     - task: DotNetCoreCLI@2
-      displayName: 'Restore packages'
+      displayName: 'Restore'
       inputs:
         command: 'restore'
         projects: '$(projectPath)'
-        feedsToUse: 'select'
 
     - task: DotNetCoreCLI@2
-      displayName: 'Build project'
+      displayName: 'Build'
       inputs:
         command: 'build'
         projects: '$(projectPath)'
         arguments: '--configuration $(buildConfiguration) --no-restore'
 
     - task: DotNetCoreCLI@2
-      displayName: 'Run tests'
+      displayName: 'Test'
       inputs:
         command: 'test'
         projects: '**/*Tests.csproj'
         arguments: '--configuration $(buildConfiguration) --no-build'
-        testRunTitle: 'Unit Tests'
-      continueOnError: true  # Продовжити навіть якщо тести не пройшли (в PR)
+      continueOnError: true
 
     - task: Docker@2
       displayName: 'Build Docker image'
       inputs:
-        containerRegistry: 'az-docker-conn'  # Створіть це підключення в Azure DevOps
+        containerRegistry: 'az-docker-conn'
         repository: '$(dockerImageName)'
         command: 'build'
         Dockerfile: '**/Dockerfile'
@@ -67,30 +60,13 @@ stages:
           $(Build.BuildId)
           latest
 
-    # Зберігаємо артефакти збірки (для локальної перевірки)
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish build artifacts'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
-
 - stage: Deploy
-  displayName: 'Deploy to Azure'
+  displayName: 'Deploy to Azure Web App'
   dependsOn: Build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))  # Тільки для main
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs:
-  - job: DeployToAzure
+  - job: DeployToWebApp
     steps:
-    - task: AzureCLI@2
-      displayName: 'Login to Azure'
-      inputs:
-        azureSubscription: 'food-conn'  # Створіть це підключення в Azure DevOps
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az acr login --name $(containerRegistryName)
-
     - task: Docker@2
       displayName: 'Push Docker image to ACR'
       inputs:
@@ -105,5 +81,5 @@ stages:
       displayName: 'Deploy to Azure Web App'
       inputs:
         azureSubscription: 'food-conn'
-        appName: 'pruvit123'  # Замініть на назву вашого веб-додатку в Azure
+        appName: 'pruvit123'
         imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):$(Build.BuildId)'

@@ -51,7 +51,7 @@ stages:
     - task: Docker@2
       displayName: 'Build and Push Docker image'
       inputs:
-        containerRegistry: 'dck-conn'
+        containerRegistry: 'dck-conn1'
         repository: '$(containerRegistryName).azurecr.io/$(dockerImageName)'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
@@ -71,4 +71,4 @@ stages:
       inputs:
         azureSubscription: 'food-conn'
         appName: 'pruvit123'
-        imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):$(Build.BuildId)'
+        imageName: '$(containerRegistryName).azurecr.io/$(dockerImageName):latest'
